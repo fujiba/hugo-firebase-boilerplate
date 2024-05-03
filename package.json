@@ -1,0 +1,14 @@
+{
+  "name": "hugo-firebase-boilerplate",
+  "version": "0.0.1",
+  "description": "Boilerplate for Firebase with Hugo contents.",
+  "scripts": {
+    "deploy:prod": "(cd website && hugo) && firebase deploy --only hosting:prod",
+    "deploy:dev": "scripts/deploy-dev.sh"
+  },
+  "author": "T.Fujiba",
+  "license": "MIT",
+  "devDependencies": {
+    "firebase-tools": "^13.8.0"
+  }
+}
