@@ -32,9 +32,8 @@ jobs:
         run: |
           if [ -z $GCLOUD_SERVICE_KEY ]; then
             echo "GCLOUD_SERVICE_KEY empty"
-          fi
-          echo ${{ steps.lookupDeployOnCommitDevelop.outputs.selected }} 
-          if [ ${{ steps.lookupDeployOnCommitDevelop.outputs.selected }} == 'true' || -z $GCLOUD_SERVICE_KEY ]; then
+            echo “skip_ci=true” >> $GITHUB_OUTPUT
+          elif [ '${{steps.lookupDeployOnCommitDevelop.outputs.selected }}' = 'true']; then
             echo “skip_ci=true” >> $GITHUB_OUTPUT
           else
             echo “skip_ci=false” >> $GITHUB_OUTPUT
