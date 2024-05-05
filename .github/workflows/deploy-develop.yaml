@@ -16,7 +16,7 @@ jobs:
     env:
       GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
     outputs:
-      skip_ci: ${{ steps.confirm_envvalues.outputs.skip_ci }}
+      skip_ci: ${{ steps.confirm_envvalues.outputs.value }}
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -32,14 +32,13 @@ jobs:
         run: |
           if [ -z $GCLOUD_SERVICE_KEY ]; then
             echo "GCLOUD_SERVICE_KEY empty, skip ci"
-            echo “skip_ci=true” >> "$GITHUB_OUTPUT"
+            echo “value=true” >> "$GITHUB_OUTPUT"
           elif [ '${{steps.lookupDeployOnCommitDevelop.outputs.result }}' != 'true']; then
             echo "lookupDeployOnCommitDevelop is not true, skip ci"
-            echo “skip_ci=true” >> "$GITHUB_OUTPUT"
+            echo “value=true” >> "$GITHUB_OUTPUT"
           else
-            echo “skip_ci=false” >> "$GITHUB_OUTPUT"
+            echo “value=false” >> "$GITHUB_OUTPUT"
           fi
-          cat "$GITHUB_OUTPUT"
   build_and_deploy:
     name: Call hugo and deploy to firebase.
     needs: confirm_pre_conditions
