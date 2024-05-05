@@ -33,7 +33,7 @@ jobs:
           if [ -z $GCLOUD_SERVICE_KEY ]; then
             echo "GCLOUD_SERVICE_KEY empty, skip ci"
             echo “skip_ci=true” >> "$GITHUB_OUTPUT"
-          elif [ '${{steps.lookupDeployOnCommitDevelop.outputs.result }}' = 'true']; then
+          elif [ '${{steps.lookupDeployOnCommitDevelop.outputs.result }}' != 'true']; then
             echo "lookupDeployOnCommitDevelop is not true, skip ci"
             echo “skip_ci=true” >> "$GITHUB_OUTPUT"
           else
@@ -49,6 +49,9 @@ jobs:
       GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
       GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
     steps:
+      - name: debug
+        run: |
+          echo "${{ needs.confirm_pre_conditions.outputs.skip_ci }}"
       - name: Checkout Repo
         uses: actions/checkout@v4
         with:
