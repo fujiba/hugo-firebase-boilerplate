@@ -1,45 +1,70 @@
 # hugo-firebase-bolierplate
 
-HugoベースなWebサイトを、firebase上に構築・デプロイするためのボイラープレートプロジェクトです。
+Hugo ベースな Web サイトを、firebase 上に構築・デプロイするためのボイラープレートプロジェクトです。
 
 本リポジトリをテンプレートにして、プロジェクトを作成し、いくつかの設定後に環境を作ることで、
 
-* developmentブランチへマージしたら、BASIC認証なサイトへデプロイ(リリース前の確認ができる)
-* mainブランチへマージしたら、本番サイトへデプロイ
+- development ブランチへマージしたら、BASIC 認証なサイトへデプロイ(リリース前の確認ができる)
+- main ブランチへマージしたら、本番サイトへデプロイ
 
 というワークフローを回すことができます。
 
-Hugoについては空っぽの状態で置いているので、そこから適宜自分好みのテンプレートを持ってきて構築することで、手早くサイトの立ち上げができます。
+Hugo については空っぽの状態で置いているので、そこから適宜自分好みのテンプレートを持ってきて構築することで、手早くサイトの立ち上げができます。
 
-なお、BASIC認証のためにFirebase Cloud functionsを使っているため、Blazeプランになります。
+なお、BASIC 認証のために Firebase Cloud functions を使っているため、Blaze プランになります。
 
-TODO:
+## 前提条件
 
-* [] 本番環境のみの構成作成
-* [] Github actionsの作成
+下記コマンドが利用可能となるようにしてください。
+
+- firebase(firebase-tools)
+- gcloud(gcloud CLI)
+- gh(Github CLI)
+- yq(jq wrapper for YAML)
+- direnv
 
 ## 環境を作る
 
 以下の流れで環境を構築環境をします。
 
-* terraformでfirebaseのプロジェクト、サイトを作成する
-* hugoのセットアップ
-* firebase functionsのBASIC認証設定
-* デプロイ
+- 設定ファイル更新(config.yaml)
+- terraform で firebase のプロジェクト、サイトを作成する
+- hugo のセットアップ
+- firebase functions の BASIC 認証設定
+- デプロイ
 
-### terraformの実行
+### 設定ファイル更新
 
-`terraform/environments/usedev`へ移動し、.envrcを作成します。
+config.yaml を編集して、必要な設定をします。
+
+| 項目                        | 説明                                                                                                 |
+| --------------------------- | ---------------------------------------------------------------------------------------------------- |
+| setup.hugoVersion           | 利用する Hugo のバージョン、最新を使う場合は`latest`とする                                           |
+| setup.deployOnCommitDevelop | develop ブランチにコミット(マージ)した時に確認用サイトのデプロイをするかどうか。`true`でデプロイする |
+| firebase.projectId          | firebase のプロジェクト ID を指定する。この ID を使って新規に firebase プロジェクトを作成します。    |
+| firebase.projectName        | firebsae のプロジェクト表示名                                                                        |
+
+### terraform の実行
+
+terraformにて、本番環境のみ、開発環境込みの２通りの環境を作成することができます。
+
+- `terraform/environments/prodonly` : 本番環境のみの構成(Sparkプランでの利用可能)
+- `terraform/environments/usedev` : 開発環境(ステージング用途)込みの構成(Sparkプランでの利用可能)
+
+terraform実行前に、`scripts/prepare-terraform.sh`を実行し、各環境の.envrcファイルを作成します。
+firebaseのプロジェクトIDおよび表示名をconfig.yamlから取得して生成します。
+
+developからのデプロイをする場合は、firebaseのBlazeプランを使う必要があるため、`TF_VAR_billing_account`にfirbaseの支払いアカウントIDを設定してください。
+
+firebase の支払いアカウント ID は、[ここ](https://cloud.google.com/billing/docs/how-to/find-billing-account-id?hl=ja)を参照してください。
 
 ```.envrc
-export TF_VAR_project_id=`firebaseのプロジェクトID`
-export TF_VAR_project_name=`firebaseプロジェクトの表示名`
+export TF_VAR_project_id=`firebaseのプロジェクトID`           # config.yamlから自動設定
+export TF_VAR_project_name=`firebaseプロジェクトの表示名`     # config.yamlから自動設定
 export TF_VAR_billing_account=`firebaseの支払いアカウントID`
 ```
 
-firebaseの支払いアカウントIDは、[ここ](https://cloud.google.com/billing/docs/how-to/find-billing-account-id?hl=ja)を参照してください。
-
-direnv allowにて環境変数を適用後、terraform init, terraform applyで環境を構築します。
+利用する環境のディレクトリ移動し、direnv allow にて環境変数を適用後、terraform init, terraform apply で環境を構築します。
 
 ```sh
 direnv allow
@@ -48,33 +73,34 @@ terraform apply
 ```
 
 NOTE:
-現在、下記警告でますがひとまず置いてますorz
+現在、下記警告でますがひとまず置いてます orz
 
 ```sh
 │ Warning: Reference to undefined provider
-│ 
+│
 │   on main.tf line 18, in module "project":
 │   18:     google-beta.no_user_project_override = google-beta.no_user_project_override
-│ 
+│
 │ There is no explicit declaration for local provider name "google-beta.no_user_project_override" in module.project, so Terraform is assuming you mean to pass a configuration for
 │ "hashicorp/google-beta".
-│ 
+│
 │ If you also control the child module, add a required_providers entry named "google-beta.no_user_project_override" with the source address "hashicorp/google-beta".
 ```
 
-### hugoのセットアップ
+### hugo のセットアップ
 
-初期時点では、website配下に空のhugoプロジェクトが置かれている状態です。(hugo init直後の状態)
+初期時点では、website 配下に空の hugo プロジェクトが置かれている状態です。(hugo init 直後の状態)
 テーマなどを適宜インストールし、コンテンツを作成してください。
 
-すでにhugoでサイトを作っている場合は、このディレクトリにコピーしてください。
+すでに hugo でサイトを作っている場合は、このディレクトリにコピーしてください。
 
-### firebase関連の設定、BASIC認証の認証情報設定
+### firebase 関連の設定、BASIC 認証の認証情報設定
 
-`scripts/setup-firebase.sh {project-id}`を実行し、firebaseのプロジェクト切り替え、デプロイターゲットおよび、BAISC認証設定をします。
+`scripts/setup-firebase.sh`を実行し、firebase のプロジェクト切り替え、デプロイターゲットおよび、BAISC 認証設定をします。
+BASIC認証設定や、dev環境設定はconfig.yamlにて`setup.deployOnCommitDevelop`が`true`になっている場合のみ行います。
 
 ```sh
-scripts/setup-firebase.sh {project-id}
+scripts/setup-firebase.sh
 Now using project {project-id}
 ✔  Applied hosting target prod to {project-id}
 Updated: prod ({project-id})
@@ -86,14 +112,26 @@ Updated: dev (dev-{project-id})
 ✔  Created a new secret version projects/************/secrets/BASIC_AUTH_PASSWORD/versions/1
 ```
 
-firebase functionsの環境変数として、BAISC認証のユーザー名とパスワードを設定する。
-Secret Managerに、`BASIC_AUTH_USER`と`BASIC_AUTH_PASSWORD`として登録しているので、以下、firebase CLIで入力する。
+firebase functions の環境変数として、BAISC 認証のユーザー名とパスワードを設定する。
+Secret Manager に、`BASIC_AUTH_USER`と`BASIC_AUTH_PASSWORD`として登録しているので、以下、firebase CLI で入力する。
 
 ## デプロイ
 
-デプロイは、npm run dev:{target}で実行します。
+手動でのデプロイは、npm run dev:{target}で実行します。
 
-* 本番環境
-`npm run dev:prod`
-* 開発環境
-`npm run dev:dev`
+- 本番環境
+  `npm run dev:prod`
+- 開発環境
+  `npm run dev:dev`
+
+Github actionsでは、website配下のコミットがあれば自動でデプロイされます。
+
+### Github actions でデプロイするための準備
+
+firebaseのデプロイを行うための、GCPサービスアカウントのキー関連情報をSecretsに保存します。
+以下のコマンドを実行することでSecretsへ保存することができます。
+
+```sh
+gh secret set GOOGLE_APPLICATION_CREDENTIALS --body '/tmp/cred.json'
+gh secret set GCLOUD_SERVICE_KEY < terraform/environments/{構築対象環境}/output/secrets/deployuser-key
+```

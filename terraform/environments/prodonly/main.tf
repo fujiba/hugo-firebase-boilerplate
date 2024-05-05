@@ -26,7 +26,7 @@ module "project" {
 module "hosting" {
   source       = "../../modules/firebase-hosting"
   project_id   = var.project_id
-  use_dev      = true
+  use_dev      = false
   display_name = "${var.project_id} development site"
   providers = {
     google-beta = google-beta
@@ -37,6 +37,7 @@ module "hosting" {
 module "service_account" {
   source     = "../../modules/service-account"
   project_id = var.project_id
+  enable_functions = false
   providers = {
     google = google
   }
