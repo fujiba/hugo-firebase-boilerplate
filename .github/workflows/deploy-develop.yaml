@@ -30,10 +30,14 @@ jobs:
       - name: Confirm environment values
         id: confirm_envvalues
         run: |
+          if [ -z $GCLOUD_SERVICE_KEY ]; then
+            echo "GCLOUD_SERVICE_KEY empty"
+          fi
+          echo ${{ steps.lookupDeployOnCommitDevelop.outputs.selected }} 
           if [ ${{ steps.lookupDeployOnCommitDevelop.outputs.selected }} == 'true' || -z $GCLOUD_SERVICE_KEY ]; then
-            echo "::set-output name=skip_ci::true"
+            echo “skip_ci=true” >> $GITHUB_OUTPUT
           else
-            echo "::set-output name=skip_ci::false"
+            echo “skip_ci=false” >> $GITHUB_OUTPUT
           fi
   build_and_deploy:
     name: Call hugo and deploy to firebase.
