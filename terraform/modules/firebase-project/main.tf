@@ -19,10 +19,14 @@ resource "google_project" "default" {
   }
 }
 
-resource "google_project_service" "default" {
-  provider = google-beta.no_user_project_override
-  project  = google_project.default.project_id
-  for_each = toset([
+locals {
+  services4hostingonly = [
+    "cloudresourcemanager.googleapis.com",
+    "firebase.googleapis.com",
+    # Enabling the ServiceUsage API allows the new project to be quota checked from now on.
+    "serviceusage.googleapis.com",
+  ]
+  services4withfunctions = [
     "cloudbilling.googleapis.com",
     "cloudresourcemanager.googleapis.com",
     "firebase.googleapis.com",
@@ -30,7 +34,13 @@ resource "google_project_service" "default" {
     "secretmanager.googleapis.com",
     # Enabling the ServiceUsage API allows the new project to be quota checked from now on.
     "serviceusage.googleapis.com",
-  ])
+  ]
+}
+
+resource "google_project_service" "default" {
+  provider = google-beta.no_user_project_override
+  project  = google_project.default.project_id
+  for_each = toset(var.billing_account == "" ? local.services4hostingonly : local.services4withfunctions)
   service = each.key
 
   # Don't disable the service if the resource block is removed by accident.

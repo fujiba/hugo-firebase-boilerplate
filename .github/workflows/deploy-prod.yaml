@@ -1,0 +1,53 @@
+name: Deploy to prod environment.
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "website/**"
+
+jobs:
+  build_and_deploy:
+    name: Call hugo and deploy to firebase.
+    runs-on: ubuntu-latest
+    env:
+      GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+      GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          submodules: true # Fetch Hugo themes (true OR recursive)
+          fetch-depth: 0 # Fetch all history for .GitInfo and .Lastmod
+      - name: Get Hugo Version from config
+        id: lookupHugoVersion
+        uses: mikefarah/yq@master
+        with:
+          cmd: yq '.setup.hugoVersion' 'config.yaml'
+      - name: Get firebase project id from config
+        id: lookupFirebaseProjectId
+        uses: mikefarah/yq@master
+        with:
+          cmd: yq '.firebase.projectId' 'config.yaml'
+      - name: setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: ${{ steps.lookupHugoVersion.outputs.result }}
+      - name: make GOOGLE_APPLICATION_CREDENTIALS
+        run: echo $GCLOUD_SERVICE_KEY | base64 -d > $GOOGLE_APPLICATION_CREDENTIALS
+      - name: Install Dependencies
+        run: |
+          npm install -g firebase-tools
+          npm ci
+      - name: Build and deploy
+        run: |
+          firebase use ${{ steps.lookupFirebaseProjectId.outputs.result }}
+          firebase target:apply hosting prod ${{ steps.lookupFirebaseProjectId.outputs.result }}
+          npm run deploy:prod
