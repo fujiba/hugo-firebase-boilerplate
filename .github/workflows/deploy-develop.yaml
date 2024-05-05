@@ -6,12 +6,35 @@ on:
     branches:
       - develop
     paths:
-      - "functions/**"
-      - "website/**"
+      - 'functions/**'
+      - 'website/**'
 
 jobs:
+  confirm_pre_conditions:
+    name: Confirm pre-conditons for continue build&deploy job.
+    runs-on: ubuntu-latest
+    env:
+      GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
+    outputs:
+      skip_ci: ${{ steps.confirm_envvalues.outputs.skip_ci }}
+    steps:
+      - name: Get setting for continue this workflow
+        id: lookupDeployOnCommitDevelop
+        uses: mikefarah/yq@master
+        with:
+          cmd: yq '.setup.deployOnCommitDevelop' 'config.yaml'
+      - name: Confirm environment values
+        id: confirm_envvalues
+        run: |
+          if [ ${{ steps.lookupDeployOnCommitDevelop.outputs.selected }} == 'true' || -z $GCLOUD_SERVICE_KEY ]; then
+            echo "::set-output name=skip_ci::true"
+          else
+            echo "::set-output name=skip_ci::false"
+          fi
   build_and_deploy:
     name: Call hugo and deploy to firebase.
+    needs: confirm_pre_conditions
+    if: ${{ needs.confirm_pre_conditions.outputs.skip_ci != 'true' }}
     runs-on: ubuntu-latest
     env:
       GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
@@ -22,16 +45,6 @@ jobs:
         with:
           submodules: true # Fetch Hugo themes (true OR recursive)
           fetch-depth: 0 # Fetch all history for .GitInfo and .Lastmod
-      - name: Get setting for continue this workflow
-        id: lookupDeployOnCommitDevelop
-        uses: mikefarah/yq@master
-        with:
-          cmd: yq '.setup.deployOnCommitDevelop' 'config.yaml'
-      - name: ${{ steps.act.outputs.selected }}
-        if: steps.lookupDeployOnCommitDevelop.outputs.selected == 'true'
-        run: |
-          echo "Deploy was skipped because deployOnCommitDevelop is true"
-          exit 1
       - name: Get Hugo Version from config
         id: lookupHugoVersion
         uses: mikefarah/yq@master
