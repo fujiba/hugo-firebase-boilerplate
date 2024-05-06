@@ -1,13 +1,16 @@
 #!/bin/bash
 
-set eu
+set -eu
 
 SCRIPT_DIR=$(cd $(dirname $0); pwd)
 PROJECT_DIR=$(cd $(dirname ${SCRIPT_DIR}); pwd)
 DIST_DIR=${PROJECT_DIR}/dist
 
+PROJECT_ID=`yq '.firebase.projectId' ${PROJECT_DIR}/config.yaml`
+
 echo "create web contents..."
-(cd ${PROJECT_DIR}/website && hugo)
+
+(cd ${PROJECT_DIR}/website && HUGO_BASEURL="https://dev-${PROJECT_ID}.web.app/" hugo --minify)
 
 if [ -e ${DIST_DIR} ]; then
    rm -rf ${DIST_DIR}
