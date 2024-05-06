@@ -31,10 +31,8 @@ jobs:
         id: confirm_envvalues
         run: |
           if [ -z $GCLOUD_SERVICE_KEY ]; then
-            echo "GCLOUD_SERVICE_KEY empty, skip ci"
             echo “value=true” >> "$GITHUB_OUTPUT"
           elif [ '${{steps.lookupDeployOnCommitDevelop.outputs.result }}' != 'true']; then
-            echo "lookupDeployOnCommitDevelop is not true, skip ci"
             echo “value=true” >> "$GITHUB_OUTPUT"
           else
             echo “value=false” >> "$GITHUB_OUTPUT"
