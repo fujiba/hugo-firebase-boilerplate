@@ -135,3 +135,7 @@ firebaseのデプロイを行うための、GCPサービスアカウントのキ
 gh secret set GOOGLE_APPLICATION_CREDENTIALS --body '/tmp/cred.json'
 gh secret set GCLOUD_SERVICE_KEY < terraform/environments/{構築対象環境}/output/secrets/deployuser-key
 ```
+
+## Lisence
+
+This project is licensed under the MIT License, see the LICENSE.txt file for details
