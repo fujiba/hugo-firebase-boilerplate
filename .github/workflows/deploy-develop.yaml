@@ -17,7 +17,6 @@ jobs:
       GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
     outputs:
       skip_ci: ${{ steps.confirmEnvValues.outputs.value }}
-      myVariable: ${{ steps.confirmEnvValues.outputs.value }}
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -32,8 +31,10 @@ jobs:
         id: confirmEnvValues
         run: |
           if [ -z $GCLOUD_SERVICE_KEY ]; then
+            echo "GCLOUD_SERVICE_KEY is not set"
             echo "value=true" >> $GITHUB_OUTPUT
           elif [ '${{steps.lookupDeployOnCommitDevelop.outputs.result }}' != 'true']; then
+            echo "deployOnCommitDevelop was set false"
             echo "value=true" >> $GITHUB_OUTPUT
           else
             echo "value=false" >> $GITHUB_OUTPUT
