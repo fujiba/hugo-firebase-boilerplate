@@ -1,6 +1,6 @@
 setup:
   hugoVersion: latest
-  deployOnCommitDevelop: true
+  deployOnCommitDevelop: false
 firebase:
-  projectId: {YOUR FIREBASE PROJECT ID HERE}
-  projectName: {YOUR FIREBASE PROJECT DISPLAYNAME HERE}
+  projectId: { YOUR FIREBASE PROJECT ID HERE }
+  projectName: { YOUR FIREBASE PROJECT DISPLAYNAME HERE }
