@@ -32,14 +32,11 @@ jobs:
         id: confirmEnvValues
         run: |
           if [ -z $GCLOUD_SERVICE_KEY ]; then
-            echo “value=true” >> "$GITHUB_OUTPUT"
-            echo "value=Hello, GitHub Actions!" >> $GITHUB_OUTPUT
+            echo "value=true" >> $GITHUB_OUTPUT
           elif [ '${{steps.lookupDeployOnCommitDevelop.outputs.result }}' != 'true']; then
-            echo “value=true” >> "$GITHUB_OUTPUT"
-            echo "value=Hello, GitHub Actions!" >> $GITHUB_OUTPUT
+            echo "value=true" >> $GITHUB_OUTPUT
           else
-            echo “value=false” >> "$GITHUB_OUTPUT"
-            echo "value=Hello, GitHub Actions!" >> $GITHUB_OUTPUT
+            echo "value=false" >> $GITHUB_OUTPUT
           fi
   build_and_deploy:
     name: Call hugo and deploy to firebase.
