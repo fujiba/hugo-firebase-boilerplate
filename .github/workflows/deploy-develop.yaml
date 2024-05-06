@@ -17,7 +17,11 @@ jobs:
       GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
     outputs:
       skip_ci: ${{ steps.confirmEnvValues.outputs.value }}
+      myVariable: ${{ steps.set_output.outputs.value }}
     steps:
+      - name: Outputを設定
+        id: set_output
+        run: echo "value=Hello, GitHub Actions!" >> $GITHUB_OUTPUT
       - name: Checkout Repo
         uses: actions/checkout@v4
         with:
