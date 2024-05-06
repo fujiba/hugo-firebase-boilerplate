@@ -17,11 +17,8 @@ jobs:
       GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
     outputs:
       skip_ci: ${{ steps.confirmEnvValues.outputs.value }}
-      myVariable: ${{ steps.set_output.outputs.value }}
+      myVariable: ${{ steps.confirmEnvValues.outputs.value }}
     steps:
-      - name: Outputを設定
-        id: set_output
-        run: echo "value=Hello, GitHub Actions!" >> $GITHUB_OUTPUT
       - name: Checkout Repo
         uses: actions/checkout@v4
         with:
@@ -36,10 +33,13 @@ jobs:
         run: |
           if [ -z $GCLOUD_SERVICE_KEY ]; then
             echo “value=true” >> "$GITHUB_OUTPUT"
+            echo "value=Hello, GitHub Actions!" >> $GITHUB_OUTPUT
           elif [ '${{steps.lookupDeployOnCommitDevelop.outputs.result }}' != 'true']; then
             echo “value=true” >> "$GITHUB_OUTPUT"
+            echo "value=Hello, GitHub Actions!" >> $GITHUB_OUTPUT
           else
             echo “value=false” >> "$GITHUB_OUTPUT"
+            echo "value=Hello, GitHub Actions!" >> $GITHUB_OUTPUT
           fi
   build_and_deploy:
     name: Call hugo and deploy to firebase.
