@@ -33,7 +33,7 @@ jobs:
           if [ -z $GCLOUD_SERVICE_KEY ]; then
             echo "GCLOUD_SERVICE_KEY is not set"
             echo "value=true" >> $GITHUB_OUTPUT
-          elif [ '${{steps.lookupDeployOnCommitDevelop.outputs.result }}' != 'true']; then
+          elif [ '${{steps.lookupDeployOnCommitDevelop.outputs.result }}' != 'true' ]; then
             echo "deployOnCommitDevelop was set false"
             echo "value=true" >> $GITHUB_OUTPUT
           else
