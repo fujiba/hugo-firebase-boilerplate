@@ -6,32 +6,56 @@ on:
     branches:
       - develop
     paths:
-      - "functions/**"
-      - "website/**"
+      - 'functions/**'
+      - 'website/**'
 
 jobs:
-  build_and_deploy:
-    name: Call hugo and deploy to firebase.
+  confirm_pre_conditions:
+    name: Confirm pre-conditons for continue build&deploy job.
     runs-on: ubuntu-latest
     env:
-      GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
       GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
+    outputs:
+      skip_ci: ${{ steps.confirmEnvValues.outputs.value }}
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
         with:
-          submodules: true # Fetch Hugo themes (true OR recursive)
           fetch-depth: 0 # Fetch all history for .GitInfo and .Lastmod
       - name: Get setting for continue this workflow
         id: lookupDeployOnCommitDevelop
         uses: mikefarah/yq@master
         with:
           cmd: yq '.setup.deployOnCommitDevelop' 'config.yaml'
-      - name: ${{ steps.act.outputs.selected }}
-        if: steps.lookupDeployOnCommitDevelop.outputs.selected == 'true'
+      - name: Confirm environment values
+        id: confirmEnvValues
         run: |
-          echo "Deploy was skipped because deployOnCommitDevelop is true"
-          exit 1
+          if [ -z $GCLOUD_SERVICE_KEY ]; then
+            echo "GCLOUD_SERVICE_KEY is not set"
+            echo "value=true" >> $GITHUB_OUTPUT
+          elif [ '${{steps.lookupDeployOnCommitDevelop.outputs.result }}' != 'true' ]; then
+            echo "deployOnCommitDevelop was set false"
+            echo "value=true" >> $GITHUB_OUTPUT
+          else
+            echo "value=false" >> $GITHUB_OUTPUT
+          fi
+  build_and_deploy:
+    name: Call hugo and deploy to firebase.
+    needs: confirm_pre_conditions
+    if: ${{ needs.confirm_pre_conditions.outputs.skip_ci != 'true' }}
+    runs-on: ubuntu-latest
+    env:
+      GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+      GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
+    steps:
+      - name: debug
+        run: |
+          echo "${{ needs.confirm_pre_conditions.outputs.skip_ci }}"
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+        with:
+          submodules: true # Fetch Hugo themes (true OR recursive)
+          fetch-depth: 0 # Fetch all history for .GitInfo and .Lastmod
       - name: Get Hugo Version from config
         id: lookupHugoVersion
         uses: mikefarah/yq@master
