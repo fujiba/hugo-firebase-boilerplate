@@ -16,7 +16,7 @@ jobs:
     env:
       GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
     outputs:
-      skip_ci: ${{ steps.confirm_envvalues.outputs.value }}
+      skip_ci: ${{ steps.confirmEnvValues.outputs.value }}
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v4
@@ -28,7 +28,7 @@ jobs:
         with:
           cmd: yq '.setup.deployOnCommitDevelop' 'config.yaml'
       - name: Confirm environment values
-        id: confirm_envvalues
+        id: confirmEnvValues
         run: |
           if [ -z $GCLOUD_SERVICE_KEY ]; then
             echo “value=true” >> "$GITHUB_OUTPUT"
