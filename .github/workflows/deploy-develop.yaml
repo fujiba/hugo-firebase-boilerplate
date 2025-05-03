@@ -24,7 +24,7 @@ jobs:
           fetch-depth: 0 # Fetch all history for .GitInfo and .Lastmod
       - name: Get setting for continue this workflow
         id: lookupDeployOnCommitDevelop
-        uses: mikefarah/yq@master
+        uses: mikefarah/yq@v4
         with:
           cmd: yq '.setup.deployOnCommitDevelop' 'config.yaml'
       - name: Confirm environment values
@@ -58,12 +58,12 @@ jobs:
           fetch-depth: 0 # Fetch all history for .GitInfo and .Lastmod
       - name: Get Hugo Version from config
         id: lookupHugoVersion
-        uses: mikefarah/yq@master
+        uses: mikefarah/yq@v4
         with:
           cmd: yq '.setup.hugoVersion' 'config.yaml'
       - name: Get firebase project id from config
         id: lookupFirebaseProjectId
-        uses: mikefarah/yq@master
+        uses: mikefarah/yq@v4
         with:
           cmd: yq '.firebase.projectId' 'config.yaml'
       - name: setup Node

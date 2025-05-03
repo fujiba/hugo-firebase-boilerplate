@@ -72,20 +72,11 @@ terraform init
 terraform apply
 ```
 
-NOTE:
-現在、下記警告でますがひとまず置いてます orz
+## プロジェクトの削除について
 
-```sh
-│ Warning: Reference to undefined provider
-│
-│   on main.tf line 18, in module "project":
-│   18:     google-beta.no_user_project_override = google-beta.no_user_project_override
-│
-│ There is no explicit declaration for local provider name "google-beta.no_user_project_override" in module.project, so Terraform is assuming you mean to pass a configuration for
-│ "hashicorp/google-beta".
-│
-│ If you also control the child module, add a required_providers entry named "google-beta.no_user_project_override" with the source address "hashicorp/google-beta".
-```
+Terraform の設定では、安全のためプロジェクト自体の削除を禁止しています 。
+
+もし Terraform で作成したプロジェクトを削除したい場合は、Google Cloud Console にログインし、対象のプロジェクトを選択して手動でシャットダウン（削除）してください。
 
 ### hugo のセットアップ
 
