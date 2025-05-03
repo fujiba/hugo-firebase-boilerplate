@@ -13,7 +13,7 @@ terraform {
 }
 
 module "project" {
-  source          = "../../modules/firebase-project"
+  source          = "./modules/firebase-project"
   project_id_prefix = var.project_id_prefix 
   project_name      = var.project_name
   billing_account = var.billing_account
@@ -24,9 +24,9 @@ module "project" {
 }
 
 module "hosting" {
-  source       = "../../modules/firebase-hosting"
+  source       = "./modules/firebase-hosting"
   project_id   = module.project.project_id
-  use_dev      = true
+  use_dev      = var.enable_dev_environment
   display_name = "${module.project.project_id} development site"
   providers = {
     google-beta = google-beta
@@ -35,9 +35,9 @@ module "hosting" {
 }
 
 module "service_account" {
-  source     = "../../modules/service-account"
+  source     = "./modules/service-account"
   project_id = module.project.project_id 
-  enable_functions = false
+  enable_functions = var.enable_dev_environment
   providers = {
     google = google
   }

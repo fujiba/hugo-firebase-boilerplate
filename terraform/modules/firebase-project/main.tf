@@ -24,6 +24,7 @@ resource "google_project" "default" {
   project_id = "${var.project_id_prefix}-${random_id.project_suffix.hex}"
   name            = var.project_name
   billing_account = var.billing_account
+  deletion_policy = "DELETE"
 
   labels = {
     "firebase" = "enabled"

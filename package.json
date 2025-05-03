@@ -4,6 +4,7 @@
   "description": "Boilerplate for Firebase with Hugo contents.",
   "scripts": {
     "deploy:prod": "(cd website && hugo --minify) && firebase deploy --only hosting:prod",
+    "init": "scripts/init-setup.sh",
     "deploy:dev": "scripts/deploy-dev.sh",
     "serve": "(cd website && hugo server)"
   },
