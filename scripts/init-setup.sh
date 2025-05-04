@@ -8,12 +8,16 @@ if [ ! -f "config.yaml" ]; then
   echo "📄 config.yaml not found. Let's configure your project interactively."
 
   # Define variables to store config values
-  declare HUGO_VERSION DEPLOY_ON_COMMIT_DEVELOP PROJECT_ID_PREFIX PROJECT_NAME BILLING_ACCOUNT
+  declare HUGO_VERSION NODE_VERSION DEPLOY_ON_COMMIT_DEVELOP PROJECT_ID_PREFIX PROJECT_NAME BILLING_ACCOUNT 
 
 
   # Ask for Hugo Version (default: latest)
   read -p "Enter Hugo version to use (default: latest): " HUGO_VERSION
   HUGO_VERSION=${HUGO_VERSION:-latest}
+
+  # Ask for Node Version (default: 20)
+  read -p "Enter Node.js version to use (LTS recommended, default: 20): " NODE_VERSION
+  NODE_VERSION=${NODE_VERSION:-20}
 
   # Ask for Deploy on Commit Develop (default: false)
   read -p "Deploy automatically on commit to 'develop' branch? (true/false, default: false): " DEPLOY_DEV_INPUT
@@ -58,6 +62,7 @@ if [ ! -f "config.yaml" ]; then
   cat << EOF > config.yaml
 setup:
   hugoVersion: ${HUGO_VERSION}
+  nodeVersion: ${NODE_VERSION}
   deployOnCommitDevelop: ${DEPLOY_ON_COMMIT_DEVELOP}
 firebase:
   projectIdPrefix: ${PROJECT_ID_PREFIX}

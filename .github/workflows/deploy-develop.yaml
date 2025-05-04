@@ -65,11 +65,16 @@ jobs:
         id: lookupFirebaseProjectId
         uses: mikefarah/yq@v4
         with:
-          cmd: yq '.firebase.projectId' 'config.yaml'
+          cmd: yq '.firebase.generatedProjectId' 'config.yaml'
+      - name: Get Node Version from config
+        id: lookupNodeVersion
+        uses: mikefarah/yq@v4
+        with:
+          cmd: yq '.setup.nodeVersion' 'config.yaml'
       - name: setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: ${{ steps.lookupNodeVersion.outputs.result }}
           cache: npm
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v3
