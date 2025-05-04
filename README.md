@@ -42,7 +42,7 @@ npm run init
 このコマンドは `scripts/init-setup.sh` を実行し、以下の処理を行います。
 
 - **`config.yaml` の生成:**
-  - `config.yaml` が存在しない場合、または `firebase.projectIdPrefix` が初期値 (`{ YOUR FIREBASE PROJECT ID PREFIX HERE }`) の場合、対話形式で以下の設定値を質問し、`config.yaml` を生成または上書きします。
+  - `config.yaml` が存在しない場合、または `firebase.projectIdPrefix` が初期値 (`__YOUR_FIREBASE_PROJECT_ID_PREFIX_HERE__`) の場合、対話形式で以下の設定値を質問し、`config.yaml` を生成または上書きします。
     - **Hugo Version:** 使用する Hugo のバージョン (デフォルト: `latest`)。
     - **Deploy on Commit Develop:** `develop` ブランチへのコミット時に確認用サイトへ自動デプロイするかどうか (`true`/`false`, デフォルト: `false`)。
     - **Firebase Project ID Prefix:** 作成する Firebase プロジェクト ID のプレフィックス (6〜29文字、小文字英数字ハイフン、英字始まり)。Terraform がこの後ろにランダムな文字列を付加して一意な ID を生成します。

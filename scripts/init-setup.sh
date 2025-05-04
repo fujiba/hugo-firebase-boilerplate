@@ -32,8 +32,8 @@ if [ "$FORCE_SETUP" = true ]; then
   INITIAL_SETUP_NEEDED=true
   echo "ℹ️ Force flag detected. Running interactive setup and overwriting existing config..."
 elif [ ! -f "config.yaml" ]; then
-  INITIAL_SETUP_NEEDED=true
-elif [[ "$(yq '.firebase.projectIdPrefix' config.yaml)" == "{ YOUR FIREBASE PROJECT ID PREFIX HERE }" ]]; then
+  INITIAL_SETUP_NEEDED=true # If config.yaml doesn't exist, setup is needed
+elif [[ "$(yq -r '.firebase.projectIdPrefix' config.yaml)" == '__YOUR_FIREBASE_PROJECT_ID_PREFIX_HERE__' ]]; then
   INITIAL_SETUP_NEEDED=true
 fi
 
