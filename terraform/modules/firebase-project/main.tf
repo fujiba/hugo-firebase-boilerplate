@@ -1,18 +1,30 @@
 terraform {
   required_providers {
     google-beta = {
-      source  = "hashicorp/google-beta"
-      version = "~> 4.0"
+      source = "hashicorp/google-beta"
+      configuration_aliases = [ google-beta.no_user_project_override ]
+    }
+    random = {
+      source = "hashicorp/random"
+      version = "~> 3.0"
+    }
+    time = {
+      source = "hashicorp/time"
     }
   }
 }
 
+# プロジェクトID用のランダムなサフィックスを生成
+resource "random_id" "project_suffix" {
+  byte_length = 4 
+}
+
 resource "google_project" "default" {
   provider = google-beta.no_user_project_override
-
-  project_id      = var.project_id
+  project_id = "${var.project_id_prefix}-${random_id.project_suffix.hex}"
   name            = var.project_name
   billing_account = var.billing_account
+  deletion_policy = "DELETE"
 
   labels = {
     "firebase" = "enabled"

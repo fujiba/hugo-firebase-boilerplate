@@ -24,7 +24,7 @@ jobs:
           fetch-depth: 0 # Fetch all history for .GitInfo and .Lastmod
       - name: Get setting for continue this workflow
         id: lookupDeployOnCommitDevelop
-        uses: mikefarah/yq@master
+        uses: mikefarah/yq@v4
         with:
           cmd: yq '.setup.deployOnCommitDevelop' 'config.yaml'
       - name: Confirm environment values
@@ -58,18 +58,23 @@ jobs:
           fetch-depth: 0 # Fetch all history for .GitInfo and .Lastmod
       - name: Get Hugo Version from config
         id: lookupHugoVersion
-        uses: mikefarah/yq@master
+        uses: mikefarah/yq@v4
         with:
           cmd: yq '.setup.hugoVersion' 'config.yaml'
       - name: Get firebase project id from config
         id: lookupFirebaseProjectId
-        uses: mikefarah/yq@master
+        uses: mikefarah/yq@v4
         with:
-          cmd: yq '.firebase.projectId' 'config.yaml'
+          cmd: yq '.firebase.generatedProjectId' 'config.yaml'
+      - name: Get Node Version from config
+        id: lookupNodeVersion
+        uses: mikefarah/yq@v4
+        with:
+          cmd: yq '.setup.nodeVersion' 'config.yaml'
       - name: setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: ${{ steps.lookupNodeVersion.outputs.result }}
           cache: npm
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v3
@@ -84,6 +89,14 @@ jobs:
           npm ci
       - name: Build and deploy
         run: |
-          firebase use ${{ steps.lookupFirebaseProjectId.outputs.result }}
-          firebase target:apply hosting dev dev-${{ steps.lookupFirebaseProjectId.outputs.result }}
-          npm run deploy:dev
+          # Only run deployment steps if on the develop branch
+          if [[ "${{ github.ref_name }}" == "develop" ]]; then
+            firebase use ${{ steps.lookupFirebaseProjectId.outputs.result }}
+            firebase target:apply hosting dev dev-${{ steps.lookupFirebaseProjectId.outputs.result }}
+            npm run deploy:dev
+          else
+            echo "Skipping deployment steps on non-develop branch (${{ github.ref_name }})."
+            # Optionally run build steps without deploy for testing
+            (cd website && hugo) # Assuming non-minified build for dev
+            # npm run build:functions # If you have a build script for functions
+          fi
