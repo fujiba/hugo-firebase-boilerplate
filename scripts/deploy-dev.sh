@@ -6,7 +6,7 @@ SCRIPT_DIR=$(cd $(dirname $0); pwd)
 PROJECT_DIR=$(cd $(dirname ${SCRIPT_DIR}); pwd)
 DIST_DIR=${PROJECT_DIR}/dist
 
-PROJECT_ID=`yq '.firebase.projectId' ${PROJECT_DIR}/config.yaml`
+PROJECT_ID=`yq '.firebase.generatedProjectId' ${PROJECT_DIR}/config.yaml`
 
 echo "create web contents..."
 

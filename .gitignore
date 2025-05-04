@@ -457,3 +457,6 @@ $RECYCLE.BIN/
 
 # project local
 **/output/secrets/
+.gemini/styleguide.md
+functions/public/*
+!functions/public/.gitkeep

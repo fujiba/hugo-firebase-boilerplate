@@ -24,7 +24,7 @@ jobs:
           fetch-depth: 0 # Fetch all history for .GitInfo and .Lastmod
       - name: Get setting for continue this workflow
         id: lookupDeployOnCommitDevelop
-        uses: mikefarah/yq@master
+        uses: mikefarah/yq@v4
         with:
           cmd: yq '.setup.deployOnCommitDevelop' 'config.yaml'
       - name: Confirm environment values
@@ -44,9 +44,6 @@ jobs:
     needs: confirm_pre_conditions
     if: ${{ needs.confirm_pre_conditions.outputs.skip_ci != 'true' }}
     runs-on: ubuntu-latest
-    env:
-      GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
-      GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
     steps:
       - name: debug
         run: |
@@ -56,34 +53,50 @@ jobs:
         with:
           submodules: true # Fetch Hugo themes (true OR recursive)
           fetch-depth: 0 # Fetch all history for .GitInfo and .Lastmod
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCLOUD_SERVICE_KEY }}
+      # GOOGLE_APPLICATION_CREDENTIALS is now set by the above action
       - name: Get Hugo Version from config
         id: lookupHugoVersion
-        uses: mikefarah/yq@master
+        uses: mikefarah/yq@v4
         with:
           cmd: yq '.setup.hugoVersion' 'config.yaml'
       - name: Get firebase project id from config
         id: lookupFirebaseProjectId
-        uses: mikefarah/yq@master
+        uses: mikefarah/yq@v4
         with:
-          cmd: yq '.firebase.projectId' 'config.yaml'
+          cmd: yq '.firebase.generatedProjectId' 'config.yaml'
+      - name: Get Node Version from config
+        id: lookupNodeVersion
+        uses: mikefarah/yq@v4
+        with:
+          cmd: yq '.setup.nodeVersion' 'config.yaml'
       - name: setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: ${{ steps.lookupNodeVersion.outputs.result }}
           cache: npm
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v3
         with:
           hugo-version: ${{ steps.lookupHugoVersion.outputs.result }}
           extended: true
-      - name: make GOOGLE_APPLICATION_CREDENTIALS
-        run: echo $GCLOUD_SERVICE_KEY | base64 -d > $GOOGLE_APPLICATION_CREDENTIALS
       - name: Install Dependencies
         run: |
           npm install -g firebase-tools
           npm ci
       - name: Build and deploy
         run: |
-          firebase use ${{ steps.lookupFirebaseProjectId.outputs.result }}
-          firebase target:apply hosting dev dev-${{ steps.lookupFirebaseProjectId.outputs.result }}
-          npm run deploy:dev
+          # Only run deployment steps if on the develop branch
+          if [[ "${{ github.ref_name }}" == "develop" ]]; then
+            firebase use ${{ steps.lookupFirebaseProjectId.outputs.result }}
+            firebase target:apply hosting dev dev-${{ steps.lookupFirebaseProjectId.outputs.result }}
+            npm run deploy:dev
+          else
+            echo "Skipping deployment steps on non-develop branch (${{ github.ref_name }})."
+            # Optionally run build steps without deploy for testing
+            (cd website && hugo) # Assuming non-minified build for dev
+            # npm run build:functions # If you have a build script for functions
+          fi
