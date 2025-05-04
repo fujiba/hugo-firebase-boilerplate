@@ -89,6 +89,14 @@ jobs:
           npm ci
       - name: Build and deploy
         run: |
-          firebase use ${{ steps.lookupFirebaseProjectId.outputs.result }}
-          firebase target:apply hosting dev dev-${{ steps.lookupFirebaseProjectId.outputs.result }}
-          npm run deploy:dev
+          # Only run deployment steps if on the develop branch
+          if [[ "${{ github.ref_name }}" == "develop" ]]; then
+            firebase use ${{ steps.lookupFirebaseProjectId.outputs.result }}
+            firebase target:apply hosting dev dev-${{ steps.lookupFirebaseProjectId.outputs.result }}
+            npm run deploy:dev
+          else
+            echo "Skipping deployment steps on non-develop branch (${{ github.ref_name }})."
+            # Optionally run build steps without deploy for testing
+            (cd website && hugo) # Assuming non-minified build for dev
+            # npm run build:functions # If you have a build script for functions
+          fi

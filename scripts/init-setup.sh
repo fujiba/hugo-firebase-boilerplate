@@ -2,9 +2,42 @@
 set -eu
 
 echo "🚀 Starting initial project setup..."
+# --- Helper Functions ---
+usage() {
+  echo "Usage: $0 [-f]"
+  echo "  -f, --force: Force overwrite existing config.yaml and run interactive setup."
+  exit 1
+}
 
-# 1. Prompt user for values if config.yaml doesn't exist
-if [ ! -f "config.yaml" ]; then
+# --- Argument Parsing ---
+FORCE_SETUP=false
+while getopts "fh-:" opt; do
+  # Support long options
+  case "${opt}" in
+      -)
+          case "${OPTARG}" in
+              force) FORCE_SETUP=true ;;
+              *) echo "Invalid long option --${OPTARG}" >&2; usage ;;
+          esac ;;
+      f) FORCE_SETUP=true ;;
+      h) usage ;;
+      \?) echo "Invalid option: -$OPTARG" >&2; usage ;;
+  esac
+done
+shift $((OPTIND-1))
+
+# 1. Check if initial setup is needed or forced
+INITIAL_SETUP_NEEDED=false
+if [ "$FORCE_SETUP" = true ]; then
+  INITIAL_SETUP_NEEDED=true
+  echo "ℹ️ Force flag detected. Running interactive setup and overwriting existing config..."
+elif [ ! -f "config.yaml" ]; then
+  INITIAL_SETUP_NEEDED=true
+elif [[ "$(yq '.firebase.projectIdPrefix' config.yaml)" == "{ YOUR FIREBASE PROJECT ID PREFIX HERE }" ]]; then
+  INITIAL_SETUP_NEEDED=true
+fi
+
+if [ ${INITIAL_SETUP_NEEDED} = true ]; then
   echo "📄 config.yaml not found. Let's configure your project interactively."
 
   # Define variables to store config values

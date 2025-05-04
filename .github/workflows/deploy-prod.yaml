@@ -72,6 +72,13 @@ jobs:
           npm ci
       - name: Build and deploy
         run: |
-          firebase use ${{ steps.lookupFirebaseProjectId.outputs.result }}
-          firebase target:apply hosting prod ${{ steps.lookupFirebaseProjectId.outputs.result }}
-          npm run deploy:prod
+          # Only run deployment steps if on the main branch
+          if [[ "${{ github.ref_name }}" == "main" ]]; then
+            firebase use ${{ steps.lookupFirebaseProjectId.outputs.result }}
+            firebase target:apply hosting prod ${{ steps.lookupFirebaseProjectId.outputs.result }}
+            npm run deploy:prod
+          else
+            echo "Skipping deployment steps on non-main branch (${{ github.ref_name }})."
+            # Optionally run build steps without deploy for testing
+            (cd website && hugo --minify)
+          fi

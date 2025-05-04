@@ -42,12 +42,12 @@ npm run init
 このコマンドは `scripts/init-setup.sh` を実行し、以下の処理を行います。
 
 - **`config.yaml` の生成:**
-  - `config.yaml` が存在しない場合、対話形式で以下の設定値を質問し、`config.yaml` を生成します。
+  - `config.yaml` が存在しない場合、または `firebase.projectIdPrefix` が初期値 (`{ YOUR FIREBASE PROJECT ID PREFIX HERE }`) の場合、対話形式で以下の設定値を質問し、`config.yaml` を生成または上書きします。
     - **Hugo Version:** 使用する Hugo のバージョン (デフォルト: `latest`)。
     - **Deploy on Commit Develop:** `develop` ブランチへのコミット時に確認用サイトへ自動デプロイするかどうか (`true`/`false`, デフォルト: `false`)。
     - **Firebase Project ID Prefix:** 作成する Firebase プロジェクト ID のプレフィックス (6〜29文字、小文字英数字ハイフン、英字始まり)。Terraform がこの後ろにランダムな文字列を付加して一意な ID を生成します。
     - **Firebase Project Display Name:** Firebase プロジェクトの表示名 (4〜30文字)。
-  - `config.yaml` が既に存在する場合は、この対話部分はスキップされます。
+  - 既に設定済みの場合は、この対話部分はスキップされます (`-f` オプションで強制的に再設定も可能)。
 - **Billing Account ID の入力 (条件付き):**
   - `config.yaml` の `setup.deployOnCommitDevelop` が `true` の場合 (確認用サイト機能を使う場合)、Blaze プランが必要になるため、Billing Account ID の入力を求められます (任意入力)。
 - **Terraform 用環境変数ファイル (`.envrc`) の生成:**
@@ -57,13 +57,16 @@ npm run init
 
 - プロジェクト ID はグローバルで一意である必要があるため、プレフィックスは他と重複しにくいものを指定してください。
 - 生成された `config.yaml` や `terraform/.envrc` の内容を確認し、必要に応じて編集してください。特に Billing Account ID は後からでも設定可能です。
+- .envrcは`.gitignore`されておりリポジトリにはコミットされません。
 
-| `config.yaml` の項目        | 説明                                                                                                 |
-| --------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `setup.hugoVersion`           | 利用する Hugo のバージョン。                                                                         |
-| `setup.deployOnCommitDevelop` | `develop` ブランチへのコミット時に確認用サイトへ自動デプロイするかどうか。                             |
-| `firebase.projectIdPrefix`    | 作成する Firebase プロジェクト ID のプレフィックス。                                                   |
-| `firebase.projectName`        | Firebase プロジェクトの表示名。                                                                      |
+| `config.yaml` の項目          | 説明                                                                                               |
+|   --------------------------- | -------------------------------------------------------------------------------------------------- |
+| `setup.hugoVersion`           | 利用する Hugo のバージョン。                                                                       |
+| `setup.nodeVersion`           | 利用する Node.js のバージョン。                                                                    |
+| `setup.deployOnCommitDevelop` | `develop` ブランチへのコミット時に確認用サイトへ自動デプロイするかどうか (`true`/`false`)。        |
+| `firebase.projectIdPrefix`    | 作成する Firebase プロジェクト ID のプレフィックス (初期設定時に設定)。                            |
+| `firebase.generatedProjectId` | Terraform によって生成された実際のプロジェクト ID (setup-firebase.sh 実行後に自動設定)。           |
+| `firebase.projectName`        | Firebase プロジェクトの表示名。                                                                    |
 
 ### 2. Terraform でのインフラ構築 (`terraform apply`)
 
@@ -135,7 +138,7 @@ Updated: dev (dev-{project-id})
 ✔  Created a new secret version projects/************/secrets/BASIC_AUTH_PASSWORD/versions/1
 ```
 
-このスクリプトは、Terraform が生成したプロジェクト ID を自動で読み取り、Firebase CLI の設定（使用するプロジェクトの切り替え、Hosting のデプロイターゲット設定）を行います。
+このスクリプトは、Terraform が生成したプロジェクト ID を自動で読み取り、`config.yaml` に `firebase.generatedProjectId` として書き込みます。その後、Firebase CLI の設定（使用するプロジェクトの切り替え、Hosting のデプロイターゲット設定）を行います。
 
 また、`config.yaml` の `setup.deployOnCommitDevelop` が `true` の場合は、確認用サイトのデプロイターゲット設定と、BASIC 認証用のユーザー名・パスワードを Secret Manager に登録するためのプロンプトが表示されます。
 
