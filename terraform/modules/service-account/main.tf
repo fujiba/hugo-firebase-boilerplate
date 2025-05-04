@@ -37,10 +37,16 @@ resource "google_project_iam_member" "firebasehosting_admin" {
   member  = "serviceAccount:${google_service_account.service_account.email}"
 }
 
-resource "google_project_iam_member" "cloudfunctions_developer" {
+resource "google_project_iam_member" "serviceusage_admin" {
+  project = var.project_id
+  role    = "roles/serviceusage.serviceUsageAdmin" # Add role to enable APIs
+  member  = "serviceAccount:${google_service_account.service_account.email}"
+}
+
+resource "google_project_iam_member" "cloudfunctions_admin" {
   count = var.enable_functions ? 1 : 0
   project = var.project_id
-  role    = "roles/cloudfunctions.developer"
+  role    = "roles/cloudfunctions.admin"
   member  = "serviceAccount:${google_service_account.service_account.email}"
 }
 
@@ -48,6 +54,17 @@ resource "google_project_iam_member" "secretmanager_viewer" {
   count = var.enable_functions ? 1 : 0
   project = var.project_id
   role    = "roles/secretmanager.viewer"
+  member  = "serviceAccount:${google_service_account.service_account.email}"
+}
+resource "google_project_iam_member" "firebaseextensions_viewer" {
+  project = var.project_id
+  role    = "roles/firebaseextensions.viewer" # Add role to view Firebase Extensions
+  member  = "serviceAccount:${google_service_account.service_account.email}"
+}
+
+resource "google_project_iam_member" "secretmanager_admin" {
+  project = var.project_id
+  role    = "roles/secretmanager.admin" # Use this role for project-level secret management permissions
   member  = "serviceAccount:${google_service_account.service_account.email}"
 }
 

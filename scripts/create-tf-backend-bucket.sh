@@ -65,7 +65,9 @@ gcloud storage buckets create "gs://${BUCKET_NAME}" \
     --project="${TARGET_PROJECT_ID}" \
     --location="${BUCKET_LOCATION}" \
     --uniform-bucket-level-access \
-    --enable-object-versioning # Enable versioning for state file history/recovery
+
+gcloud storage buckets update "gs://${BUCKET_NAME}" \
+    --versioning # Enable versioning for state file history/recovery
 
 echo "✅ Bucket ${BUCKET_NAME} created successfully."
 
@@ -76,17 +78,25 @@ if [[ "$UPDATE_BACKEND_TF" =~ ^[Yy]([Ee][Ss])?$ ]]; then
   BACKEND_TF_FILE="terraform/backend.tf"
   if [ -f "$BACKEND_TF_FILE" ]; then
     echo "Updating ${BACKEND_TF_FILE}..."
-    # Use sed to uncomment the block and replace the bucket name
-    # Note: Using '|' as delimiter for sed because bucket names can contain '-' but not '|'
-    sed -i.bak \
-        -e 's|^# \(terraform {\)|\1|' \
-        -e 's|^#   \(backend "gcs" {\)|\1|' \
-        -e "s|^#     bucket = \".*\"|    bucket = \"${BUCKET_NAME}\"|" \
-        -e 's|^#     \(prefix = .*\)|\1|' \
-        -e 's|^#   }\)|\1|' \
-        -e 's|^# }\)|\1|' \
-        "$BACKEND_TF_FILE"
-    echo "✅ ${BACKEND_TF_FILE} updated. Original file saved as ${BACKEND_TF_FILE}.bak"
+    # Backup the original file
+    cp "$BACKEND_TF_FILE" "${BACKEND_TF_FILE}.bak"
+    echo "Original file saved as ${BACKEND_TF_FILE}.bak"
+
+    # Get the project directory name to use as prefix
+    # Get the absolute path of the project root directory
+    PROJECT_ROOT_DIR=$(cd "$(dirname "$(dirname "$0")")" && pwd)
+    PROJECT_DIR_NAME=$(basename "$PROJECT_ROOT_DIR")
+
+    # Overwrite backend.tf with the new content
+    cat << EOF > "$BACKEND_TF_FILE"
+terraform {
+  backend "gcs" {
+    bucket = "${BUCKET_NAME}" # Updated by create-tf-backend-bucket.sh
+    prefix = "${PROJECT_DIR_NAME}" # Use project directory name as prefix
+  }
+}
+EOF
+    echo "✅ ${BACKEND_TF_FILE} updated."
     echo "➡️ Please run 'terraform init -reconfigure' in the 'terraform' directory."
   else
     echo "⚠️ ${BACKEND_TF_FILE} not found. Please update it manually."
