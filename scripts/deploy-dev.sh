@@ -23,7 +23,7 @@ echo "deploy functions..."
 cp -rp ${PROJECT_DIR}/website/public ${DIST_DIR}
 cp -rp functions/* ${DIST_DIR}
 
-(cd ${DIST_DIR} && npm ci)
+(cd ${DIST_DIR} && pnpm install --frozen-lockfile)
 firebase deploy --only functions
 
 echo "clean up..."
