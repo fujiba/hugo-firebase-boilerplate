@@ -13,7 +13,12 @@
   "devDependencies": {
     "eslint": "^9.2.0",
     "eslint-config-prettier": "^9.1.0",
-    "firebase-tools": "^13.8.0",
+    "firebase-tools": "^15.10.0",
     "prettier": "^3.2.5"
+  },
+  "pnpm": {
+    "overrides": {
+      "@tootallnate/once": ">=3.0.1"
+    }
   }
 }

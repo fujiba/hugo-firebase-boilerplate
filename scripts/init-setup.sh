@@ -153,5 +153,5 @@ if [ "$CONFIG_JUST_CREATED" = true ]; then
     echo "   Please review the generated config.yaml and .envrc files."
 fi
 
-echo "➡️ Next steps typically involve running 'npm install' (if needed) and then proceeding with Terraform setup in the 'terraform/' directory."
+echo "➡️ Next steps typically involve running 'pnpm install' (if needed) and then proceeding with Terraform setup in the 'terraform/' directory."
 echo "   Remember to set TF_VAR_billing_account in terraform/.envrc if required."
